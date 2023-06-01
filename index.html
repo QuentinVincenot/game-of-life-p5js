@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <title>Conway's Game of Life</title>
+    <style>
+        #global_container {
+            width: 1000px;
+            margin: 10px auto 10px auto;
+            background-color: aquamarine;
+        }
+
+        #title_container {
+            display: flex;
+            height: 50px;
+            background-color: lightcoral;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #application_title {
+            text-align: center;
+        }
+
+        #game_container {
+            height: 1000px;
+        }
+
+        #canvas_container {
+            width: 540px;
+            height: 290px;
+            margin: 20px auto 0 auto;
+        }
+
+        #bar_chart_container {
+            width: 900px;
+            height: 250px;
+            margin: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="global_container">
+        <div id="title_container">
+            <h1 id="application_title">Conway's Game of Life</h1>
+        </div>
+        <div id="game_container">
+            <span>Step 0</span>
+            <span id="living_cells_text">Living cells : 0</span>
+            <div id="canvas_container"></div>
+            <button>Next step</button>
+
+            <div id="bar_chart_container">
+                <canvas id="bar_chart_canvas" width=900 height=250></canvas>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let canvas;
+
+        let initial_x = 0, initial_y = 0;
+        let diameter = 0;
+        let moved = false;
+
+        // Amount of still living cells in the game
+        let LIVING_CELLS = 0;
+
+        // Define the number of rows and columns for the grid
+        let NB_ROWS = 10, NB_COLS = 20;
+
+        // Define the margin outside of the grid
+        let margin_above = 20, margin_left = 20;
+
+        // Declare the variables hodling the spaces between lines of the grid
+        let vertical_space, horizontal_space;
+
+
+        function setup() {
+            // Retrieve and link the existing canvas to the game of life
+            retrieve_and_link_canvas();
+
+            // Draw a gray background into the canvas
+            background(220);
+
+            // Initialize and the grid that will the hold the game of life
+            initialize_grid();
+
+            // Create random agents inside the game of life
+            initialize_game_of_life();
+
+            /*for (let i = 0; i < 3; i++) {
+                initial_x = random(width);
+                initial_y = random(height);
+                diameter = random(10, 50);
+                const color = [random(255), random(255), random(255)];
+                fill(color);
+                circle(initial_x, initial_y, diameter);
+            }*/
+        }
+
+        function retrieve_and_link_canvas() {
+            // Retrieve the canvas container to hold the game of life
+            const container = document.getElementById('canvas_container');
+            const canvasWidth = container.offsetWidth;
+            const canvasHeight = container.offsetHeight;
+            canvas = createCanvas(canvasWidth, canvasHeight);
+            canvas.parent('canvas_container');
+        }
+
+        function initialize_grid() {
+            // Define the game of life grid configurations
+            let x_start = margin_left, x_end = width - x_start;
+            let y_start = margin_above, y_end = height - y_start;
+
+            // Determine the lines horizontal/vertical spaces
+            vertical_space = (y_end - y_start) / NB_ROWS;
+            horizontal_space = (x_end - x_start) / NB_COLS;
+
+            // Draw the horizontal lines to create the grid
+            let number_h_lines = ((x_end - x_start) / NB_ROWS);
+            for (let i = 0; i <= number_h_lines; i++) {
+                const y = margin_above + i * vertical_space;
+                line(x_start, y, x_end, y);
+            }
+
+            // Draw the vertical lines to create the grid
+            let number_v_lines = ((x_end - x_start) / NB_COLS);
+            for (let j = 0; j <= number_v_lines; j++) {
+                const x = margin_left + j * horizontal_space;
+                line(x, y_start, x, y_end);
+            }
+        }
+
+        function initialize_game_of_life() {
+            // Choose a random color for the game of life agents
+            const color = [random(255), random(255), random(255)];
+            fill(color);
+
+            // Iterate over each cell of the grid to initialize agents
+            for (let i = 0; i < NB_COLS; i++) {
+                for (let j = 0; j < NB_ROWS; j++) {
+                    // Draw a random number between 0 and 100
+                    let random_number = random(0, 101);
+                    // There is a 30% chance to create an agent at the beginning in the cell
+                    let should_create = floor(random_number) < 30;
+                    if (should_create) {
+                        // Retrieve the exact coordinates of the cell and draw the agent
+                        let rect_x_start = margin_left + i * horizontal_space;
+                        let rect_y_start = margin_above + j * vertical_space;
+                        rect(rect_x_start, rect_y_start, horizontal_space, vertical_space);
+
+                        // Increase the initial count of living cells in the game
+                        LIVING_CELLS += 1;
+                    }
+                }
+            }
+
+            // Update the text indicating the number of living cells in the game
+            document.getElementById('living_cells_text').innerHTML = "Living cells : " + str(LIVING_CELLS);
+        }
+
+        function draw() {
+            /*if (!moved) {
+                initial_x += 1;
+                initial_y += 1;
+                background(220);
+                circle(initial_x, initial_y, diameter);
+                if (initial_x > 350) {
+                    moved = true;
+                }
+
+            }*/
+        }
+
+
+
+        let labels = [], datapoints = [];
+        for (let i = 0; i < 20; i++) {
+            labels.push((i + 1).toString());
+            let value = Math.floor(Math.random() * 80) + 120;
+            datapoints.push(value);
+        }
+
+
+        var data = {
+            labels: labels,
+            datasets: [{
+                label: 'Births',
+                data: datapoints,
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }, {
+                label: 'Deaths',
+                data: datapoints,
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        };
+
+
+        var options = {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        };
+
+
+        var ctx = document.getElementById('bar_chart_canvas').getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: data,
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        stacked: true,
+                    },
+                    y: {
+                        stacked: true
+                    }
+                }
+            }
+        });
+
+    </script>
+</body>
+
+</html>
