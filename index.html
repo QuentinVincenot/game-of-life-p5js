@@ -13,7 +13,8 @@
         #global_container {
             width: 1000px;
             margin: 10px auto 10px auto;
-            background-color: aquamarine;
+            background-color: #fff0db;
+            border-radius: 0 0 10px 10px;
         }
 
         #title_container {
@@ -22,6 +23,7 @@
             background-color: lightcoral;
             justify-content: center;
             align-items: center;
+            border-radius: 10px 10px 0 0;
         }
 
         #application_title {
@@ -29,40 +31,110 @@
         }
 
         #game_container {
-            height: 1000px;
+            height: 800px;
+        }
+
+        #game_status_container,
+        #game_buttons_container {
+            display: flex;
+            height: 50px;
+            background-color: darkorange;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        .status_container {
+            margin: 5px;
+            padding: 10px 10px;
         }
 
         #canvas_container {
             width: 540px;
             height: 290px;
-            margin: 20px auto 0 auto;
+            margin: 0 auto 0 auto;
+        }
+
+        .button_container button {
+            margin: 5px;
+            padding: 8px 20px;
+            font-size: 16px;
+            border-radius: 10px;
+            background-color: #87CEFA;
+            border: none;
+            cursor: pointer;
+        }
+
+        .button_container button:disabled {
+            background-color: #FFCCCB;
+            cursor: not-allowed;
         }
 
         #bar_chart_container {
             width: 900px;
-            height: 250px;
+            height: 200px;
             margin: auto;
+        }
+
+        #line_chart_container {
+            width: 900px;
+            height: 200px;
+            margin: 0 auto 10px auto;
         }
     </style>
 </head>
 
 <body>
     <div id="global_container">
+
         <div id="title_container">
             <h1 id="application_title">Conway's Game of Life</h1>
         </div>
+
         <div id="game_container">
-            <span>Step 0</span>
-            <span id="living_cells_text">Living cells : 0</span>
+
+            <div id="game_status_container">
+                <div class="status_container">
+                    <span id="game_steps_text">Current step : 0</span>
+                </div>
+                <div class="status_container">
+                    <span id="living_cells_text">Living cells : 0</span>
+                </div>
+            </div>
+
+
             <div id="canvas_container"></div>
-            <button>Next step</button>
+
+
+            <div id="game_buttons_container">
+                <div class="button_container">
+                    <button disabled>Reset game</button>
+                </div>
+                <div class="button_container">
+                    <button onclick="processNextStep()">Play next step</button>
+                </div>
+                <div class="button_container">
+                    <button disabled>Play 100 steps</button>
+                </div>
+            </div>
+
 
             <div id="bar_chart_container">
-                <canvas id="bar_chart_canvas" width=900 height=250></canvas>
+                <canvas id="bar_chart_canvas" width=900 height=200></canvas>
+            </div>
+
+            <div id="line_chart_container">
+                <canvas id="line_chart_canvas" width=900 height=200></canvas>
             </div>
 
         </div>
     </div>
+
+    <!-- Include the births/deaths barchart related code into the page -->
+    <script src="births_deaths_barchart.js"></script>
+
+    <!-- Include the population linechart related code into the page -->
+    <script src="population_linechart.js"></script>
 
     <script>
         let canvas;
@@ -71,8 +143,8 @@
         let diameter = 0;
         let moved = false;
 
-        // Amount of still living cells in the game
-        let LIVING_CELLS = 0;
+        // Amount of steps played and still living cells in the game
+        let CURRENT_STEP = 0, LIVING_CELLS = 0;
 
         // Define the number of rows and columns for the grid
         let NB_ROWS = 10, NB_COLS = 20;
@@ -183,57 +255,38 @@
 
 
 
-        let labels = [], datapoints = [];
-        for (let i = 0; i < 20; i++) {
-            labels.push((i + 1).toString());
-            let value = Math.floor(Math.random() * 80) + 120;
-            datapoints.push(value);
+        let labels = [], births = [], deaths = [], population = [];
+        for (let i = 0; i < 21; i++) {
+            labels.push(i.toString());
+            let value1 = Math.floor(Math.random() * 80) + 120;
+            let value2 = Math.floor(Math.random() * 80) + 120;
+            if (i == 0) {
+                value2 = 0;
+            }
+            births.push(value1);
+            deaths.push(value2);
+            population.push(value1 - value2);
         }
 
 
-        var data = {
-            labels: labels,
-            datasets: [{
-                label: 'Births',
-                data: datapoints,
-                backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }, {
-                label: 'Deaths',
-                data: datapoints,
-                backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                borderColor: 'rgba(255, 99, 132, 1)',
-                borderWidth: 1
-            }]
-        };
+
+        // Initialize the bar chart representing the births/deaths every game step
+        initialize_births_deaths_barchart(labels, births, deaths);
+
+        // Initialize the line chart representing the population evolution
+        initialize_population_linechart(labels, population);
 
 
-        var options = {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        };
+
+        function processNextStep() {
+            // Increment the number of steps played in the game
+            CURRENT_STEP += 1;
+
+            // Update the text caption showing the current number of steps played in the game
+            document.getElementById('game_steps_text').innerHTML = "Current step : " + CURRENT_STEP.toString();
+        }
 
 
-        var ctx = document.getElementById('bar_chart_canvas').getContext('2d');
-        var myChart = new Chart(ctx, {
-            type: 'bar',
-            data: data,
-            options: {
-                responsive: true,
-                scales: {
-                    x: {
-                        stacked: true,
-                    },
-                    y: {
-                        stacked: true
-                    }
-                }
-            }
-        });
 
     </script>
 </body>
