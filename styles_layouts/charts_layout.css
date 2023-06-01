@@ -1,0 +1,17 @@
+/*--------------------------------------------------------------------------------
+----- Charts containers layout configuration
+--------------------------------------------------------------------------------*/
+
+/* Configure the bar chart container to be centered and of fixed size */
+#bar_chart_container {
+    width: 900px;
+    height: 200px;
+    margin: auto;
+}
+
+/* Configure the line chart container to be centered and of fixed size */
+#line_chart_container {
+    width: 900px;
+    height: 200px;
+    margin: 0 auto 10px auto;
+}

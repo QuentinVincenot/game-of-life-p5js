@@ -1,0 +1,83 @@
+/*--------------------------------------------------------------------------------
+----- Global page organisation
+--------------------------------------------------------------------------------*/
+
+/* Configure the global page container with a defined width/color/margins/radiuses */
+#global_container {
+    width: 1000px;
+    margin: 10px auto 10px auto;
+    background-color: #fff0db;
+    border-radius: 0 0 10px 10px;
+}
+
+/*--------------------------------------------------------------------------------
+----- Page title container/text configurations
+--------------------------------------------------------------------------------*/
+
+/* Configure the container of the application title */
+#title_container {
+    display: flex;
+    height: 50px;
+    background-color: lightcoral;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px 10px 0 0;
+}
+
+/*--------------------------------------------------------------------------------
+----- Game of life containers configurations
+--------------------------------------------------------------------------------*/
+
+/* Configure the global game container with a fixed height */
+#game_container {
+    height: 800px;
+}
+
+/* Configure the game status/action buttons banners with color/centering/height */
+#game_status_container,
+#game_buttons_container {
+    display: flex;
+    height: 50px;
+    background-color: darkorange;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+}
+
+/* Configure the status container with dedicated spacing to give texts some fresh air */
+.status_container {
+    margin: 5px;
+    padding: 10px 10px;
+}
+
+/*--------------------------------------------------------------------------------
+----- Game of life canvas container configuration
+--------------------------------------------------------------------------------*/
+
+/* Configure the game of life canvas container */
+#canvas_container {
+    width: 540px;
+    height: 290px;
+    margin: 0 auto 0 auto;
+}
+
+/*--------------------------------------------------------------------------------
+----- Action buttons configuration
+--------------------------------------------------------------------------------*/
+
+/* Configure the default aspect of action buttons */
+.button_container button {
+    margin: 5px;
+    padding: 8px 20px;
+    font-size: 16px;
+    border-radius: 10px;
+    background-color: #87CEFA;
+    border: none;
+    cursor: pointer;
+}
+
+/* Configure the aspect of disabled buttons */
+.button_container button:disabled {
+    background-color: #FFCCCB;
+    cursor: not-allowed;
+}
