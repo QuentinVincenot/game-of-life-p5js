@@ -48,7 +48,7 @@
                     <button disabled>Reset game</button>
                 </div>
                 <div class="button_container">
-                    <button onclick="processNextStep()">Play next step</button>
+                    <button onclick="process_next_step()">Play next step</button>
                 </div>
                 <div class="button_container">
                     <button disabled>Play 100 steps</button>
@@ -137,16 +137,15 @@
                 // Add all the cells from the created row to the list of all cells
                 CELLS.push(current_row_cells);
             }
+            console.table(CELLS);
 
             // Update the game status messages (current step and living cells in the game)
-            updateGameStatusMessages();
+            update_game_status_messages();
         }
 
         function draw() {
 
         }
-
-
 
 
 
@@ -179,6 +178,101 @@
 
 
 
+        function update_game_status_messages() {
+            // Update the text caption showing the current number of steps played in the game
+            document.getElementById('game_steps_text').innerHTML = "Current step : " + CURRENT_STEP.toString();
+
+            // Update the text indicating the number of living cells in the game
+            document.getElementById('living_cells_text').innerHTML = "Living cells : " + str(LIVING_CELLS);
+        }
+
+
+
+        function process_next_step() {
+            // Increment the number of steps played in the game
+            CURRENT_STEP += 1;
+
+            // Compute the births and deaths of every cells at the next step of the game
+            compute_next_game_state();
+            console.table(CELLS);
+
+            // Update the game status messages (current step and living cells in the game)
+            update_game_status_messages();
+        }
+
+        function compute_next_game_state() {
+            // Initialize the next game step cells future states
+            let updated_cells = [];
+            for (let i = 0; i < NB_ROWS; i++) {
+                // Initialize the next game step current row cells future states
+                let updated_cells_new_row = [];
+                for (let j = 0; j < NB_COLS; j++) {
+                    // Compute the number of neighbours of the current cell
+                    let amount_of_neighbours = compute_amount_of_neighbours(i, j);
+
+                    // Initialize the variable holding the current cell future state
+                    let updated_cell_status = CELLS[i][j];
+
+                    // RULE 1 : "Any live cell with fewer than two live neighbours dies, as if by underpopulation."
+                    if (CELLS[i][j] == 1 && amount_of_neighbours < 2) {
+                        updated_cell_status = 0;
+                    }
+                    // RULE 2 : "Any live cell with two or three live neighbours lives on to the next generation.""
+                    else if (CELLS[i][j] == 1 && (amount_of_neighbours >= 2 || amount_of_neighbours <= 3)) {
+                        updated_cell_status = 1;
+                    }
+                    // RULE 3 : "Any live cell with more than three live neighbours dies, as if by overpopulation."
+                    else if (CELLS[i][j] == 1 && amount_of_neighbours > 3) {
+                        updated_cell_status = 0;
+                    }
+                    // RULE 4 : "Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction."
+                    else if (CELLS[i][j] == 0 && amount_of_neighbours == 3) {
+                        updated_cell_status = 1;
+                    }
+
+                    // Add the current cell future computed state to the list of the game next step cells states
+                    updated_cells_new_row.push(updated_cell_status);
+                }
+
+                // Add the current cell row future computed state to the list of the game next step cells states
+                updated_cells.push(updated_cells_new_row);
+            }
+
+            // Replace the old step game cells by the updated/computed ones for the next game step
+            CELLS = updated_cells;
+        }
+
+        function compute_amount_of_neighbours(row_index, col_index) {
+            if (row_index == 0) {
+                if (col_index == 0) {
+                    // Pas de voisins à gauche (et au-dessus)
+
+                } else if (col_index == (NB_COLS - 1)) {
+                    // Pas de voisins à droite (et au-dessus)
+
+                } else {
+                    // Pas de voisins au-dessus
+
+                }
+            } else if (row_index == (NB_ROWS - 1)) {
+                if (col_index == 0) {
+                    // Pas de voisins à gauche (et en-dessous)
+
+                } else if (col_index == (NB_COLS - 1)) {
+                    // Pas de voisins à droite (et en-dessous)
+
+                } else {
+                    // Pas de voisins en-dessous
+
+                }
+            } else {
+                // Voisins partout
+
+            }
+        }
+
+
+
         // Initialize data for the births/deaths bar chart and the population line chart
         charts_data = initialize_data_for_charts();
         let labels = charts_data.labels, births = charts_data.births,
@@ -189,24 +283,6 @@
 
         // Initialize the line chart representing the population evolution
         initialize_population_linechart(labels, population);
-
-
-
-        function updateGameStatusMessages() {
-            // Update the text caption showing the current number of steps played in the game
-            document.getElementById('game_steps_text').innerHTML = "Current step : " + CURRENT_STEP.toString();
-
-            // Update the text indicating the number of living cells in the game
-            document.getElementById('living_cells_text').innerHTML = "Living cells : " + str(LIVING_CELLS);
-        }
-
-        function processNextStep() {
-            // Increment the number of steps played in the game
-            CURRENT_STEP += 1;
-
-            // Update the game status messages (current step and living cells in the game)
-            updateGameStatusMessages();
-        }
 
 
 
