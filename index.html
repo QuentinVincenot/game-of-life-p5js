@@ -189,15 +189,18 @@
 
 
         function process_next_step() {
-            // Increment the number of steps played in the game
-            CURRENT_STEP += 1;
-
             // Compute the births and deaths of every cells at the next step of the game
             compute_next_game_state();
-            console.table(CELLS);
+            //console.table(CELLS);
+
+            // Compute the current step number (increment) and the amount of living cells
+            compute_step_number_and_living_cells();
 
             // Update the game status messages (current step and living cells in the game)
             update_game_status_messages();
+
+            //
+            //update_grid();
         }
 
         function compute_next_game_state() {
@@ -218,7 +221,7 @@
                         updated_cell_status = 0;
                     }
                     // RULE 2 : "Any live cell with two or three live neighbours lives on to the next generation.""
-                    else if (CELLS[i][j] == 1 && (amount_of_neighbours >= 2 || amount_of_neighbours <= 3)) {
+                    else if (CELLS[i][j] == 1 && amount_of_neighbours >= 2 && amount_of_neighbours <= 3) {
                         updated_cell_status = 1;
                     }
                     // RULE 3 : "Any live cell with more than three live neighbours dies, as if by overpopulation."
@@ -232,6 +235,8 @@
 
                     // Add the current cell future computed state to the list of the game next step cells states
                     updated_cells_new_row.push(updated_cell_status);
+
+                    //console.log("[", i, ",", j, "] : ", CELLS[i][j], " + ", amount_of_neighbours, " = ", updated_cell_status);
                 }
 
                 // Add the current cell row future computed state to the list of the game next step cells states
@@ -239,35 +244,112 @@
             }
 
             // Replace the old step game cells by the updated/computed ones for the next game step
-            CELLS = updated_cells;
+            CELLS = structuredClone(updated_cells);
         }
 
         function compute_amount_of_neighbours(row_index, col_index) {
+            // Initialize the current count of neighbours for the current cell
+            let amount_of_neighbours = 0;
+
             if (row_index == 0) {
                 if (col_index == 0) {
-                    // Pas de voisins à gauche (et au-dessus)
-
+                    // Check the neighbour the row under, in the same column
+                    amount_of_neighbours += CELLS[row_index + 1][col_index];
+                    // Check the neighbour in the same row, the column on the right
+                    amount_of_neighbours += CELLS[row_index][col_index + 1];
+                    // Check the neighbour the row under, the column on the right
+                    amount_of_neighbours += CELLS[row_index + 1][col_index + 1];
                 } else if (col_index == (NB_COLS - 1)) {
-                    // Pas de voisins à droite (et au-dessus)
-
+                    // Check the neighbour the row under, in the same column
+                    amount_of_neighbours += CELLS[row_index + 1][col_index];
+                    // Check the neighbour in the same row, the column on the left
+                    amount_of_neighbours += CELLS[row_index][col_index - 1];
+                    // Check the neighbour the row under, the column on the left
+                    amount_of_neighbours += CELLS[row_index + 1][col_index - 1];
                 } else {
-                    // Pas de voisins au-dessus
-
+                    // Check the neighbour in the same row, the column on the left
+                    amount_of_neighbours += CELLS[row_index][col_index - 1]
+                    // Check the neighbour in the same row, the column on the right
+                    amount_of_neighbours += CELLS[row_index][col_index + 1]
+                    // Check the three neighbours the row under
+                    for (let i = (col_index - 1); i <= (col_index + 1); i++) {
+                        amount_of_neighbours += CELLS[row_index + 1][i];
+                    }
                 }
             } else if (row_index == (NB_ROWS - 1)) {
                 if (col_index == 0) {
-                    // Pas de voisins à gauche (et en-dessous)
-
+                    // Check the neighbour the row above, in the same column
+                    amount_of_neighbours += CELLS[row_index - 1][col_index];
+                    // Check the neighbour in the same row, the column on the right
+                    amount_of_neighbours += CELLS[row_index][col_index + 1];
+                    // Check the neighbour the row above, the column on the right
+                    amount_of_neighbours += CELLS[row_index - 1][col_index + 1];
                 } else if (col_index == (NB_COLS - 1)) {
-                    // Pas de voisins à droite (et en-dessous)
-
+                    // Check the neighbour the row above, in the same column
+                    amount_of_neighbours += CELLS[row_index - 1][col_index];
+                    // Check the neighbour in the same row, the column on the left
+                    amount_of_neighbours += CELLS[row_index][col_index - 1];
+                    // Check the neighbour the row above, the column on the left
+                    amount_of_neighbours += CELLS[row_index - 1][col_index - 1];
                 } else {
-                    // Pas de voisins en-dessous
-
+                    // Check the neighbour in the same row, the column on the left
+                    amount_of_neighbours += CELLS[row_index][col_index - 1]
+                    // Check the neighbour in the same row, the column on the right
+                    amount_of_neighbours += CELLS[row_index][col_index + 1]
+                    // Check the three neighbours the row above
+                    for (let i = (col_index - 1); i <= (col_index + 1); i++) {
+                        amount_of_neighbours += CELLS[row_index - 1][i];
+                    }
                 }
             } else {
-                // Voisins partout
+                if (col_index == 0) {
+                    // Check the neighbour the row above, in the same column
+                    amount_of_neighbours += CELLS[row_index - 1][col_index];
+                    // Check the three neighbours the column on the right
+                    for (let i = (row_index - 1); i <= (row_index + 1); i++) {
+                        amount_of_neighbours += CELLS[i][col_index + 1];
+                    }
+                    // Check the neighbour the row under, in the same column
+                    amount_of_neighbours += CELLS[row_index + 1][col_index];
+                } else if (col_index == (NB_COLS - 1)) {
+                    // Check the neighbour the row above, in the same column
+                    amount_of_neighbours += CELLS[row_index - 1][col_index];
+                    // Check the three neighbours the column on the left
+                    for (let i = (row_index - 1); i <= (row_index + 1); i++) {
+                        amount_of_neighbours += CELLS[i][col_index - 1];
+                    }
+                    // Check the neighbour the row under, in the same column
+                    amount_of_neighbours += CELLS[row_index + 1][col_index];
+                } else {
+                    // Check the three neighbours the row above
+                    for (let i = (col_index - 1); i <= (col_index + 1); i++) {
+                        amount_of_neighbours += CELLS[row_index - 1][i];
+                    }
+                    // Check the neighbour in the same row, the column on the left
+                    amount_of_neighbours += CELLS[row_index][col_index - 1];
+                    // Check the neighbour in the same row, the column on the right
+                    amount_of_neighbours += CELLS[row_index][col_index + 1];
+                    // Check the three neighbours the row under
+                    for (let i = (col_index - 1); i <= (col_index + 1); i++) {
+                        amount_of_neighbours += CELLS[row_index + 1][i];
+                    }
+                }
+            }
 
+            // Return the counted number of living neighbours in the total game cells
+            return amount_of_neighbours;
+        }
+
+        function compute_step_number_and_living_cells() {
+            // Increment the number of steps played in the game
+            CURRENT_STEP += 1;
+
+            // Count the total number of cells in the the game in this new step
+            LIVING_CELLS = 0;
+            for (let i = 0; i < NB_ROWS; i++) {
+                for (let j = 0; j < NB_COLS; j++) {
+                    LIVING_CELLS += CELLS[i][j];
+                }
             }
         }
 
